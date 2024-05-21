@@ -4,28 +4,21 @@ import {expect} from "chai";
 let result: string;
 
 Given("the fleet of another user", async function () {
-    const anotherFleet = this.testFleets[1];
-    this.anotherFleet = await this.fleetManagementService.createFleet(anotherFleet.fleetId, anotherFleet.userId);
+    this.anotherFleet = await this.fleetManagementService.createFleet(this.testUsers[1]);
+    this.testFleets.push(this.anotherFleet.id);
 });
 
 When(/^I(?: try to)? register this vehicle into my fleet$/, async function () {
-    let fleet;
     try {
-        fleet = await this.fleetManagementService.registerVehicle(this.fleet, this.vehicle);
+        this.fleet = await this.fleetManagementService.registerVehicle(this.fleet, this.vehicle);
         result = "success";
-        if (!fleet?.equals(this.fleet)) {
-            throw new Error("WTF");
-        }
     } catch (error) {
         result = (error as Error).message;
     }
 });
 
 When("this vehicle has been registered into the other user's fleet", async function () {
-    const fleet = await this.fleetManagementService.registerVehicle(this.anotherFleet, this.vehicle);
-    if (!fleet.equals(this.anotherFleet)) {
-        throw new Error("WTF");
-    }
+    this.anotherFleet = await this.fleetManagementService.registerVehicle(this.anotherFleet, this.vehicle);
 });
 
 Then("this vehicle should be part of my vehicle fleet", function () {

@@ -1,50 +1,48 @@
-import {After, Before, BeforeAll, Given} from "@cucumber/cucumber";
-import {FleetManagementService, FleetManagementServiceFactory} from "../../src/App";
+import {After, AfterAll, Before, BeforeAll, Given} from "@cucumber/cucumber";
+import {FleetManagementService, FleetManagementServiceFactory} from "../../src/App/index.js";
 
 let fleetManagementService: FleetManagementService;
-const testFleets = [{fleetId: "fleet1", userId: "user1"}, {fleetId: "fleet2", userId: "user2"}];
-const testVehicles = [{plateNumber: "vehicle1"}];
+const testUsers = ["user1", "user2"];
+const testVehicles = ["ABC1234DEF"];
 const testLocations = [{latitude: 40.7128, longitude: -74.0060, altitude: 0}];
-BeforeAll(function () {
-    console.log("creating fleet-service");
+
+BeforeAll(async function () {
     fleetManagementService = FleetManagementServiceFactory.create();
+    console.log("FleetManagementService created");
 });
 
-Before(function () {
+Before(async function () {
     this.fleetManagementService = fleetManagementService;
-    this.testFleets = testFleets;
+    this.testUsers = testUsers;
+    this.testFleets = [];
     this.testVehicles = testVehicles;
     this.testLocations = testLocations;
 });
 
-After(function () {
+After(async function () {
     //Cleanup
     console.log("deleting test objects");
     console.log("deleting test fleets");
-    for (const {fleetId} of this.testFleets) {
+    for (const fleetId of this.testFleets) {
         console.log(`deleting test fleet ${fleetId}`);
-        this.fleetManagementService.deleteFleet(fleetId);
+        await this.fleetManagementService.deleteFleet(fleetId);
     }
     console.log("deleting test vehicles");
-    for (const {plateNumber} of this.testVehicles) {
+    for (const plateNumber of this.testVehicles) {
         console.log(`deleting test vehicle ${plateNumber}`);
-        this.fleetManagementService.deleteVehicle(plateNumber);
+        await this.fleetManagementService.deleteVehicle(plateNumber);
     }
 });
 
 Given("my fleet", async function () {
-    const fleet = this.testFleets[0];
-    this.fleet = await this.fleetManagementService.createFleet(fleet.fleetId, fleet.userId);
+    this.fleet = await this.fleetManagementService.createFleet(this.testUsers[0]);
+    this.testFleets.push(this.fleet.id);
 });
 
 Given("a vehicle", async function () {
-    const vehicle = this.testVehicles[0];
-    this.vehicle = await this.fleetManagementService.createVehicle(vehicle.plateNumber);
+    this.vehicle = await this.fleetManagementService.createVehicle(this.testVehicles[0]);
 });
 
 Given("I have registered this vehicle into my fleet", async function () {
-    const fleet = await this.fleetManagementService.registerVehicle(this.fleet, this.vehicle);
-    if (!fleet.equals(this.fleet)) {
-        throw new Error("WTF");
-    }
+    this.fleet = await this.fleetManagementService.registerVehicle(this.fleet, this.vehicle);
 });

@@ -7,6 +7,7 @@
     "@types/chai": "^4.3.16",
     "@types/cucumber": "^7.0.0",
     "@types/node": "^20.12.12",
+    "@types/ramda": "^0.30.0",
     "chai": "^4.4.1",
     "cucumber": "^6.0.7",
     "cucumber-pretty": "^6.0.1",
@@ -14,8 +15,12 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
   },
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "test": "cucumber-js --profile default"
+  },
+  "dependencies": {
+    "nanoid": "^5.0.7",
+    "ramda": "^0.30.0",
   }
 }
