@@ -1,0 +1,8 @@
+default:
+  import:
+    - tests/steps/**/*.js
+  format:
+    - progress
+    - summary
+  paths:
+    - tests/features/**/*.feature
