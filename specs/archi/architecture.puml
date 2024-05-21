@@ -1,0 +1,275 @@
+@startuml
+!theme blueprint
+title Architecture of Vehicle Fleet Management System
+hide empty members
+
+package App {
+    class FleetManagementService {
+        + createFleet(fleetId: string, userId: string): Fleet
+        + createVehicle(plateNumber: string) : Vehicle
+        + deleteFleet(fleetId: string): Fleet
+        + deleteVehicle(plateNumber: string) : Vehicle
+        + registerVehicle(fleet: Fleet, vehicle: Vehicle): Fleet
+        + parkVehicle(vehicle: Vehicle, location: Location): Location
+        + getFleetId(plateNumber: string): Location
+        + getVehicleByPlateNumber(plateNumber: string): Location
+        + getVehicleLocation(plateNumber: string): Location
+    }
+
+    package Commands {
+        class CreateVehicleCommand {
+            - vehicle: Vehicle
+            + CreateVehicleCommand(vehicle: Vehicle)
+        }
+
+        class DeleteVehicleCommand {
+            - vehicle: Vehicle
+            + DeleteVehicleCommand(vehicle: Vehicle)
+        }
+
+        class CreateFleetCommand {
+            - fleet: Fleet
+            + CreateFleetCommand(fleet: Fleet)
+        }
+
+        class DeleteFleetCommand {
+            - vehicle: Vehicle
+            + DeleteFleetCommand(vehicle: Vehicle)
+        }
+
+        class RegisterVehicleCommand {
+            - fleet: Fleet
+            - vehicle : Vehicle
+            + RegisterVehicleCommand(fleet: Fleet, vehicle: Vehicle)
+        }
+
+        class ParkVehicleCommand {
+            - vehicle: Vehicle
+            - location: Location
+            + ParkVehicleCommand(vehicle: Vehicle, location: Location)
+        }
+    }
+    package Queries {
+        class GetVehicleLocationQuery {
+            - name: string = "GetVehicleLocationQuery"
+            - plateNumber: string
+            + GetVehicleLocationQuery(plateNumber: string)
+        }
+
+        class GetVehicleByPlateNumberQuery {
+            - name: string = "GetVehicleByPlateNumberQuery"
+            - plateNumber: string
+            + GetVehicleByPlateNumberQuery(plateNumber: string)
+        }
+        class GetFleetByIdQuery {
+            - name: string = "GetFleetByIdQuery"
+            - plateNumber: string
+            + GetFleetByIdQuery(plateNumber: string)
+        }
+    }
+
+    package Handlers {
+        interface Handler<T> {
+            handle(t: T): any;
+        }
+
+        class Queries {
+            - {static} handlers Object
+            + {static} register<T>(queryName: string, handler: Handler<T>): void
+            + {static} query<T>(query: T): void
+        }
+
+        package Query {
+            class GetFleetByIdQueryHandler<GetFleetByIdQuery> {
+                + handle(query: GetFleetByIdQuery)
+                - GetFleetByIdQueryHandler(repository: QueryRepository<Fleet>, string)
+            }
+
+            class GetVehicleByPlateNumberQueryHandler<GetVehicleByPlateNumberQuery> {
+                + handle(query: GetVehicleByPlateNumberQuery)
+                - GetVehicleByPlateNumberQueryHandler(repository: QueryRepository<Vehicle>, string)
+            }
+
+            class GetVehicleLocationQueryHandler<GetVehicleLocationQuery> {
+                + handle(query: GetVehicleLocationQuery)
+                - GetVehicleLocationQueryHandler(repository: QueryRepository<Vehicle>, string)
+            }
+        }
+
+        class Commands {
+            - {static} handlers Object
+            + {static} register<T>(commandName: string, handler: Handler<T>): void
+            + {static} execute<T>(command: T): void
+        }
+
+        package Command {
+            class CreateFleetCommandHandler<CreateFleetCommand> {
+                - repository : CommandRepository<Fleet>
+                + handle(command: CreateFleetCommand) : void
+                + CreateFleetCommandHandler(repository: CommandRepository<Fleet>)
+            }
+
+            class RegisterVehicleCommandHandler<RegisterVehicleCommand> {
+                - repository : CommandRepository<Fleet>
+                + handle(command: RegisterVehicleCommand) : void
+                + RegisterVehicleCommandHandler(repository: CommandRepository<Fleet>)
+            }
+
+            class DeleteFleetCommandHandler<DeleteFleetCommand> {
+                - repository : CommandRepository<Fleet>
+                + handle(command: DeleteFleetCommand) : void
+                + DeleteFleetCommandHandler(repository: CommandRepository<Fleet>)
+            }
+
+            class CreateVehicleCommandHandler<CreateVehicleCommand> {
+                - repository : CommandRepository<Vehicle>
+                + handle(command: CreateVehicleCommand) : void
+                + CreateVehicleCommandHandler(repository: CommandRepository<Vehicle>)
+            }
+            class DeleteVehicleCommandHandler<DeleteVehicleCommand> {
+                - repository : CommandRepository<Vehicle>
+                + handle(command: DeleteVehicleCommand)) : void
+                + DeleteVehicleCommandHandler(repository: CommandRepository<Vehicle>)
+            }
+            class ParkVehicleCommandHandler<ParkVehicleCommand> {
+                - repository : CommandRepository<Vehicle>
+                + handle(command: ParkVehicleCommand) : void
+                + ParkVehicleCommandHandler(repository: CommandRepository<Vehicle>)
+            }
+        }
+    }
+}
+
+package Domain {
+    package Model {
+        class Fleet {
+          - fleetId: string
+          - userId: string
+          - vehicles: Map<string, Vehicle>
+          + getFleetId(): string
+          + getUserId(): string
+          + getVehicles(): Map<string, Vehicle>
+          + addVehicle(vehicle: Vehicle): void
+          + hasVehicle(vehicle: Vehicle): boolean
+        }
+
+        class Vehicle {
+          - plateNumber: string
+          - currentLocation: Location | null
+          + getPlateNumber(): string
+          + getType(): VehicleType
+          + getCurrentLocation(): Location | null
+          + parkAt(location: Location): void
+        }
+
+        class Location {
+          - latitude: number
+          - longitude: number
+          - altitude: number
+          + getLatitude(): number
+          + getLongitude(): number
+          + getAltitude(): number
+          + equals(other: Location): boolean
+        }
+
+        Fleet "many" o-- "many"  Vehicle : "registers"
+        Vehicle --* "1" Location : "is parked at"
+    }
+
+    class DomainEvents {
+        - {static} handlers Object
+        + {static} register<T>(eventName: string, handler: Handler<T>): void
+        + {static} publish<T>(event: T): void
+    }
+
+    package Events {
+        package Handlers {
+            class FleetCreatedEventHandler<FleetCreatedEvent> {
+                + handle(event: FleetCreatedEvent)
+            }
+
+            class FleetDeletedEventHandler<FleetDeletedEvent> {
+                + handle(event: FleetDeletedEvent)
+            }
+
+            class VehicleRegisteredEventHandler<VehicleRegisteredEvent> {
+                + handle(event: VehicleRegisteredEvent)
+            }
+
+            class VehicleCreatedEventHandler<VehicleCreatedEvent> {
+                + handle(event: VehicleCreatedEvent)
+            }
+
+            class VehicleDeletedEventHandler<VehicleDeletedEvent> {
+                + handle(event: VehicleDeletedEvent)
+            }
+
+            class VehicleParkedEventHandler<VehicleParkedEvent> {
+                + handle(event: VehicleParkedEvent)
+            }
+
+        }
+
+        class FleetCreatedEvent {
+            - fleet: Fleet
+            + FleetCreatedEvent(fleet: Fleet)
+        }
+
+        class FleetDeletedEvent {
+            - fleet: Fleet
+            + FleetDeletedEvent(fleet: Fleet)
+        }
+
+        class VehicleRegisteredEvent {
+            - fleet: Fleet
+            - vehicle: Vehicle
+            + VehicleRegisteredEvent(fleet: Fleet, vehicle: Vehicle)
+        }
+
+        class VehicleCreatedEvent {
+            - vehicle: Vehicle
+            + VehicleCreatedEvent(vehicle: Vehicle)
+        }
+
+        class VehicleDeletedEvent {
+            - vehicle: Vehicle
+            + VehicleDeletedEvent(vehicle: Vehicle)
+        }
+
+        class VehicleParkedEvent {
+            - vehicle: Vehicle
+            - location: Location
+            + VehicleParkedEvent(vehicle: Vehicle, location: Location)
+        }
+    }
+
+    App.FleetManagementService ---> Domain.DomainEvents : publish()
+    Domain.DomainEvents o-- (Domain.Events, Domain.Events.Handlers) : register()
+
+    Domain.Events.Handlers --> App.Handlers.Commands : execute()
+}
+
+package Infra {
+    interface CommandRepository<T> {
+        + create(entity: T): void
+        + update(entity: T): void
+        + delete(entity: T): void
+    }
+    interface QueryRepository<K, T> {
+        + find(query: K): T
+    }
+
+    CommandRepository --> Domain.Model.Fleet
+    CommandRepository --> Domain.Model.Vehicle
+    QueryRepository --> Domain.Model.Fleet
+    QueryRepository --> Domain.Model.Vehicle
+}
+
+App.FleetManagementService ---> App.Handlers.Query : query()
+
+App.Commands <--- App.Handlers.Command: executes
+App.Handlers.Query ---> App.Queries : executes
+
+App.Handlers.Commands ---> CommandRepository : writes >
+App.Handlers.Queries ---> QueryRepository : reads >
+@enduml

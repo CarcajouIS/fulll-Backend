@@ -1,0 +1,79 @@
+@startuml
+!theme blueprint
+title Event Handlers
+
+class DomainEvents {
+    - {static} handlers Object
+    + {static} register<T>(eventName: string, handler: Handler<T>): void
+    + {static} publish<T>(event: T): void
+}
+
+package Events {
+
+    class FleetCreatedEvent {
+        + fleet: Fleet
+        - FleetCreatedEvent(fleet: Fleet)
+    }
+
+    class VehicleCreatedEvent {
+        + vehicle: Vehicle
+        - VehicleCreatedEvent(vehicle: Vehicle)
+    }
+
+    class FleetDeletedEvent {
+        + fleet: Fleet
+        - FleetDeletedEvent(fleet: Fleet)
+    }
+
+    class VehicleDeletedEvent {
+        + vehicle: Vehicle
+        - VehicleDeletedEvent(vehicle: Vehicle)
+    }
+
+    class VehicleParkedEvent {
+        + vehicle: Vehicle
+        + location: Location
+        - VehicleParkedEvent(vehicle: Vehicle, location: Location)
+    }
+
+    class VehicleRegisteredEvent {
+        + fleet: Fleet
+        + vehicle: Vehicle
+        - VehicleRegisteredEvent(fleet: Fleet, vehicle: Vehicle)
+    }
+
+    package Handlers {
+            class FleetCreatedEventHandler {
+                + handle(event: FleetCreatedEvent): void
+            }
+
+            class VehicleCreatedEventHandler {
+                + handle(event: VehicleCreatedEvent): void
+            }
+
+            class FleetDeletedEventHandler {
+                + handle(event: FleetDeletedEvent): void
+            }
+
+            class VehicleDeletedEventHandler {
+                + handle(event: VehicleDeletedEvent): void
+            }
+
+            class VehicleParkedEventHandler {
+                + handle(event: VehicleParkedEvent): void
+            }
+
+            class VehicleRegisteredEventHandler {
+                + handle(event: VehicleRegisteredEvent): void
+            }
+    }
+
+(FleetCreatedEvent, FleetCreatedEventHandler) -o DomainEvents : register()
+(FleetDeletedEvent, FleetDeletedEventHandler) -o DomainEvents : register()
+(VehicleCreatedEvent, VehicleCreatedEventHandler) -o DomainEvents : register()
+(VehicleDeletedEvent, VehicleDeletedEventHandler) -o DomainEvents : register()
+(VehicleRegisteredEvent, VehicleRegisteredEventHandler) -o DomainEvents : register()
+(VehicleParkedEvent, VehicleParkedEventHandler) -o DomainEvents : register()
+
+}
+@enduml

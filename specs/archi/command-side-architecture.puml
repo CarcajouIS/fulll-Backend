@@ -1,0 +1,73 @@
+@startuml
+!theme blueprint
+title Command Side Architecture
+hide empty members
+
+package App {
+    class FleetManagementService {
+        + createFleet(fleetId: string, userId: string): Fleet
+        + createVehicle(plateNumber: string) : Vehicle
+        + deleteFleet(fleetId: string): Fleet
+        + deleteVehicle(plateNumber: string) : Vehicle
+        + registerVehicle(fleet: Fleet, vehicle: Vehicle): Fleet
+        + parkVehicle(vehicle: Vehicle, location: Location): Location
+        + getFleetId(plateNumber: string): Location
+        + getVehicleByPlateNumber(plateNumber: string): Location
+        + getVehicleLocation(plateNumber: string): Location
+    }
+
+    package Commands {
+        class CreateVehicleCommand {
+            - vehicle: Vehicle
+            + execute() : Vehicle
+            + CreateVehicleCommand(vehicle: Vehicle)
+        }
+
+        class DeleteVehicleCommand {
+            - vehicle: Vehicle
+            + execute() : void
+            + DeleteVehicleCommand(vehicle: Vehicle)
+        }
+
+        class CreateFleetCommand {
+            - fleet: Fleet
+            + execute() : Fleet
+            + CreateFleetCommand(fleet: Fleet)
+        }
+
+        class DeleteFleetCommand {
+            - vehicle: Vehicle
+            + execute() : void
+            + DeleteFleetCommand(vehicle: Vehicle)
+        }
+
+        class RegisterVehicleCommand {
+            - fleet: Fleet
+            - vehicle : Vehicle
+            + execute() : void
+            + RegisterVehicleCommand(fleet: Fleet, vehicle: Vehicle)
+        }
+
+        class ParkVehicleCommand {
+            - vehicle: Vehicle
+            - location: Location
+            + execute() : void
+            + ParkVehicleCommand(vehicle: Vehicle, location: Location)
+        }
+    }
+}
+
+package Infra {
+    interface CommandRepository<T> {
+        + create(entity: T): void
+        + update(entity: T): void
+        + delete(entity: T): void
+    }
+}
+
+App.FleetManagementService --> App.Commands : executes() >
+
+App.Commands --> Infra.CommandRepository : writes >
+
+
+@enduml

@@ -1,0 +1,82 @@
+@startuml
+!theme blueprint
+title Query Side Architecture
+hide empty members
+
+package App {
+    class FleetManagementService {
+        + createFleet(fleetId: string, userId: string): Fleet
+        + createVehicle(plateNumber: string) : Vehicle
+        + deleteFleet(fleetId: string): Fleet
+        + deleteVehicle(plateNumber: string) : Vehicle
+        + registerVehicle(fleet: Fleet, vehicle: Vehicle): Fleet
+        + parkVehicle(vehicle: Vehicle, location: Location): Location
+        + getFleetId(plateNumber: string): Location
+        + getVehicleByPlateNumber(plateNumber: string): Location
+        + getVehicleLocation(plateNumber: string): Location
+    }
+
+    package Queries {
+        class GetVehicleLocationQuery {
+            - name: string = "GetVehicleLocationQuery"
+            - plateNumber: string
+            + GetVehicleLocationQuery(plateNumber: string)
+        }
+
+        class GetVehicleByPlateNumberQuery {
+            - name: string = "GetVehicleByPlateNumberQuery"
+            - plateNumber: string
+            + GetVehicleByPlateNumberQuery(plateNumber: string)
+        }
+        class GetFleetByIdQuery {
+            - name: string = "GetFleetByIdQuery"
+            - plateNumber: string
+            + GetFleetByIdQuery(plateNumber: string)
+        }
+    }
+
+    package Handlers {
+        interface Handler<T> {
+            handle(t: T): any;
+        }
+
+        class Queries {
+            - {static} handlers Object
+            + {static} register<T>(queryName: string, handler: Handler<T>): void
+            + {static} query<T>(query: T): void
+        }
+
+        package Query {
+            class GetFleetByIdQueryHandler<GetFleetByIdQuery> {
+                + handle(query: GetFleetByIdQuery)
+                - GetFleetByIdQueryHandler(repository: QueryRepository<Fleet>, string)
+            }
+
+            class GetVehicleByPlateNumberQueryHandler<GetVehicleByPlateNumberQuery> {
+                + handle(query: GetVehicleByPlateNumberQuery)
+                - GetVehicleByPlateNumberQueryHandler(repository: QueryRepository<Vehicle>, string)
+            }
+
+            class GetVehicleLocationQueryHandler<GetVehicleLocationQuery> {
+                + handle(query: GetVehicleLocationQuery)
+                - GetVehicleLocationQueryHandler(repository: QueryRepository<Vehicle>, string)
+            }
+        }
+    }
+}
+
+
+package Infra {
+    interface QueryRepository<K, T> {
+        + find(query: K): T
+    }
+}
+
+App.FleetManagementService -left-> App.Handlers.Queries : query()
+
+Handlers -down-> QueryRepository : reads >
+
+App.Handlers.Query -left-> App.Queries : handle()
+
+(App.Handlers.Query, App.Queries) -right-o App.Handlers.Queries : register()
+@enduml

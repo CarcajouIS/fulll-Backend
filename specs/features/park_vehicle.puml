@@ -1,0 +1,25 @@
+@startuml
+!theme blueprint
+
+title Park Vehicle Sequence Diagram
+actor User
+participant FleetManagementService
+participant Vehicle
+participant DomainEvents
+participant FleetCommandHandler
+participant CommandRepository
+
+
+User -> FleetManagementService : parkVehicle(vehicle, location)
+FleetManagementService -> Vehicle : parkAt(location)
+alt Vehicle is already parked at location
+    Vehicle -[#red]> FleetManagementService : throw Error("Vehicle already parked")
+    FleetManagementService -[#red]> User : "Vehicle already parked"
+else Vehicle is not parked at location
+    FleetManagementService -> DomainEvents : publish(event = VehicleParkedEvent(fleet, vehicle))
+    DomainEvents -> FleetCommandHandler : handle(command = ParkVehicleCommand(event.fleet, event.vehicle))
+    FleetCommandHandler -> CommandRepository : update(command.fleet)
+    FleetManagementService -[#green]> User : "success"
+
+end
+@enduml

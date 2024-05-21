@@ -1,0 +1,101 @@
+@startuml
+!theme blueprint
+title Simplified Architecture for Vehicle Fleet Management System
+hide empty members
+
+package App {
+    class FleetManagementService {
+        + createFleet(fleetId: string, userId: string): Fleet
+        + createVehicle(plateNumber: string) : Vehicle
+        + deleteFleet(fleetId: string): Fleet
+        + deleteVehicle(plateNumber: string) : Vehicle
+        + registerVehicle(fleet: Fleet, vehicle: Vehicle): Fleet
+        + parkVehicle(vehicle: Vehicle, location: Location): Location
+        + getFleetId(plateNumber: string): Location
+        + getVehicleByPlateNumber(plateNumber: string): Location
+        + getVehicleLocation(plateNumber: string): Location
+    }
+
+    package Commands {
+        class CreateVehicleCommand
+        class CreateFleetCommand
+        class DeleteVehicleCommand
+        class DeleteFleetCommand
+        class RegisterVehicleCommand
+        class ParkVehicleCommand
+    }
+
+    package Queries {
+        class GetVehicleLocationQuery
+        class GetVehicleByPlateNumberQuery
+        class GetFleetByIdQuery
+    }
+}
+
+package Domain {
+    package Model {
+        class Fleet {
+          + addVehicle(vehicle: Vehicle): void
+        }
+        class Vehicle {
+          + parkAt(location: Location): void
+        }
+        class Location
+        Fleet o-- Vehicle : "registers"
+        Vehicle --* Location : "is parked at"
+    }
+
+    class DomainEvents {
+        - {static} handlers Object
+        + {static} register<T>(eventName: string, handler: Handler<T>): void
+        + {static} publish<T>(event: T): void
+    }
+
+    package Events {
+
+        class FleetCreatedEvent
+        class FleetDeletedEvent
+        class VehicleCreatedEvent
+        class VehicleDeletedEvent
+        class VehicleRegisteredEvent
+        class VehicleParkedEvent
+
+        package Handlers {
+            class FleetCreatedEventHandler<FleetCreatedEvent>
+            class FleetDeletedEventHandler<FleetDeletedEvent>
+            class VehicleCreatedEventHandler<VehicleCreatedEvent>
+            class VehicleDeletedEventHandler<VehicleDeletedEvent>
+            class VehicleRegisteredEventHandler<VehicleRegisteredEvent>
+            class VehicleParkedEventHandler<VehicleParkedEvent>
+
+        }
+
+        App.FleetManagementService ---> Domain.DomainEvents : publish()
+        Domain.DomainEvents o-- (Domain.Events, Domain.Events.Handlers) : register()
+
+    }
+}
+
+
+package Infra {
+    interface CommandRepository<T> {
+        + create(entity: T): void
+        + update(entity: T): void
+        + delete(entity: T): void
+    }
+    interface QueryRepository<K, T> {
+        + find(query: K): T
+    }
+
+    CommandRepository --> Domain.Model.Fleet
+    CommandRepository --> Domain.Model.Vehicle
+    QueryRepository --> Domain.Model.Fleet
+    QueryRepository --> Domain.Model.Vehicle
+}
+
+App.FleetManagementService ---> App.Queries : query()
+App.FleetManagementService --> App.Commands : execute()
+
+App.Commands ---> CommandRepository : writes >
+App.Queries ---> QueryRepository : reads >
+@enduml

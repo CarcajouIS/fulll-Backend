@@ -1,0 +1,24 @@
+@startuml
+!theme blueprint
+
+title Register Vehicle Sequence Diagram
+actor User
+participant FleetManagementService
+participant Fleet
+participant DomainEvents
+participant FleetCommandHandler
+participant CommandRepository
+
+User -> FleetManagementService : registerVehicle(fleet, vehicle)
+FleetManagementService -> Fleet : addVehicle(vehicle)
+alt Vehicle is already registered __for this fleet__
+    Fleet -[#red]> FleetManagementService : throw Error("Vehicle already registered")
+    FleetManagementService -[#red]> User : "Vehicle already registered"
+else Vehicle is not registered __for this fleet__
+    FleetManagementService -> DomainEvents : publish(event = VehicleRegisteredEvent(fleet, vehicle))
+    DomainEvents -> FleetCommandHandler : handle(command = RegisterVehicleCommand(event.fleet, event.vehicle))
+    FleetCommandHandler -> CommandRepository : update(command.fleet)
+    FleetManagementService -[#green]> User : "success"
+end
+@enduml
+

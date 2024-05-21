@@ -1,0 +1,37 @@
+@startuml
+!theme blueprint
+title Domain Model
+
+class Fleet {
+  - fleetId: string
+  - userId: string
+  - vehicles: Map<string, Vehicle>
+  + getFleetId(): string
+  + getUserId(): string
+  + getVehicles(): Map<string, Vehicle>
+  + addVehicle(vehicle: Vehicle): void
+  + hasVehicle(vehicle: Vehicle): boolean
+}
+
+class Vehicle {
+  - plateNumber: string
+  - currentLocation: Location | null
+  + getPlateNumber(): string
+  + getType(): VehicleType
+  + getCurrentLocation(): Location | null
+  + parkAt(location: Location): void
+}
+
+class Location {
+  - latitude: number
+  - longitude: number
+  - altitude: number
+  + getLatitude(): number
+  + getLongitude(): number
+  + getAltitude(): number
+  + equals(other: Location): boolean
+}
+
+Fleet "many" o-- "many"  Vehicle : "registers"
+Vehicle --* "1" Location : "is parked at"
+@enduml
