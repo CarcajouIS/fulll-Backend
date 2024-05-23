@@ -1,5 +1,6 @@
-import {After, AfterAll, Before, BeforeAll, Given} from "@cucumber/cucumber";
 import {FleetManagementService, FleetManagementServiceFactory} from "../../src/App/index.js";
+import {After, AfterAll, Before, BeforeAll, Given} from "@cucumber/cucumber";
+import {AppDataSource} from "../../src/Infra/index.js";
 
 let fleetManagementService: FleetManagementService;
 const testUsers = ["user1", "user2"];
@@ -7,8 +8,10 @@ const testVehicles = ["ABC1234DEF"];
 const testLocations = [{latitude: 40.7128, longitude: -74.0060, altitude: 0}];
 
 BeforeAll(async function () {
-    fleetManagementService = FleetManagementServiceFactory.create();
-    console.log("FleetManagementService created");
+    await AppDataSource.initialize();
+    console.debug("Data Source has been initialized");
+    fleetManagementService = await FleetManagementServiceFactory.create();
+    console.debug("FleetManagementService created");
 });
 
 Before(async function () {
@@ -21,17 +24,16 @@ Before(async function () {
 
 After(async function () {
     //Cleanup
-    console.log("deleting test objects");
-    console.log("deleting test fleets");
-    for (const fleetId of this.testFleets) {
-        console.log(`deleting test fleet ${fleetId}`);
-        await this.fleetManagementService.deleteFleet(fleetId);
-    }
-    console.log("deleting test vehicles");
-    for (const plateNumber of this.testVehicles) {
-        console.log(`deleting test vehicle ${plateNumber}`);
-        await this.fleetManagementService.deleteVehicle(plateNumber);
-    }
+    await AppDataSource.createQueryBuilder().delete().from("Fleet").execute();
+    console.debug("Table Fleet cleared");
+    await AppDataSource.createQueryBuilder().delete().from("Vehicle").execute();
+    console.debug("Table Vehicle cleared");
+});
+
+AfterAll(async function () {
+    await AppDataSource.dropDatabase();
+    await AppDataSource.destroy();
+    console.debug("Database cleared");
 });
 
 Given("my fleet", async function () {

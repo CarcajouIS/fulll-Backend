@@ -1,4 +1,4 @@
-class GetVehicleLocationQuery {
+export class GetVehicleLocationQuery {
     constructor(public plateNumber: string) {
     }
 
@@ -6,5 +6,3 @@ class GetVehicleLocationQuery {
         return this.plateNumber;
     }
 }
-
-export {GetVehicleLocationQuery};

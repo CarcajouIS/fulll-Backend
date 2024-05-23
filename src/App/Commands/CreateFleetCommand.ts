@@ -1,17 +1,15 @@
-import {FleetRepository} from "../../Infra/Repositories/index.js";
-import {Fleet, FleetLike} from "../../Domain/Model/index.js";
+import {AppDataSource} from "../../Infra/index.js";
+import {Fleet, type FleetLike} from "../../Domain/Model/index.js";
 
-class CreateFleetCommand {
+export class CreateFleetCommand {
     constructor(private readonly params: FleetLike) {
         this.params = {...this.params, vehicles: []};
     }
 
     async execute(): Promise<Fleet> {
-        const obj = FleetRepository.create(this.params);
-        const fleet = await FleetRepository.save(obj);
-        console.log(`Create fleet ${JSON.stringify(fleet)}`);
+        const obj: Fleet = AppDataSource.getRepository(Fleet).create(this.params);
+        const fleet: Fleet = await AppDataSource.getRepository(Fleet).save(obj);
+        console.debug(`Create fleet ${JSON.stringify(fleet)}`);
         return fleet;
     }
 }
-
-export {CreateFleetCommand};

@@ -1,14 +1,18 @@
-import {Fleet, Location} from "./index.js";
+import {Fleet, type Location} from "./index.js";
+import {Column, Entity, ManyToMany, PrimaryColumn} from "typeorm";
 import * as R from "ramda";
 
+@Entity()
 export class Vehicle {
+    @PrimaryColumn("varchar")
     plateNumber: string;
-    currentLocation: Location = new Location();
+    @Column("json", {nullable: true})
+    currentLocation?: Location;
+    @ManyToMany(() => Fleet, fleet => fleet.vehicles, {onDelete: "CASCADE", onUpdate: "CASCADE"})
     fleets!: Fleet[];
 
-    constructor({plateNumber, fleets}: VehicleLike) {
+    constructor(plateNumber: string) {
         this.plateNumber = plateNumber;
-        this.fleets = fleets ?? [];
     }
 
     get id() {

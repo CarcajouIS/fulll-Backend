@@ -1,14 +1,13 @@
-import {DomainEvents, events} from "../Domain/index.js";
 import {commands, queries} from "./index.js";
-import {Fleet, Location, Vehicle} from "../Domain/Model/index.js";
-import {FleetRepository, VehicleRepository} from "../Infra/Repositories/index.js";
+import {DomainEvents, events, model} from "../Domain/index.js";
+import {AppDataSource} from "../Infra/index.js";
 
-class FleetManagementService {
+export class FleetManagementService {
 
     /**
      * Create a new fleet
      */
-    async createFleet(userId: string, fleetId?: string): Promise<Fleet> {
+    async createFleet(userId: string, fleetId?: string): Promise<model.Fleet> {
         const fleet = await new commands.CreateFleetCommand({fleetId, userId}).execute();
         DomainEvents.publish(new events.FleetCreatedEvent({fleet}));
         return fleet;
@@ -17,7 +16,7 @@ class FleetManagementService {
     /**
      * Create a new vehicle
      */
-    async createVehicle(plateNumber: string): Promise<Vehicle> {
+    async createVehicle(plateNumber: string): Promise<model.Vehicle> {
         const vehicle = await new commands.CreateVehicleCommand({plateNumber}).execute();
         DomainEvents.publish(new events.VehicleCreatedEvent({vehicle}));
         return vehicle;
@@ -42,8 +41,8 @@ class FleetManagementService {
     /**
      * Register a vehicle to a fleet
      */
-    async registerVehicle(fleet: Fleet, vehicle: Vehicle): Promise<Fleet> {
-        fleet = await new commands.RegisterVehicleCommand({fleet, vehicle}).execute() as Fleet;
+    async registerVehicle(fleet: model.Fleet, vehicle: model.Vehicle): Promise<model.Fleet> {
+        fleet = await new commands.RegisterVehicleCommand({fleet, vehicle}).execute() as model.Fleet;
         DomainEvents.publish(new events.VehicleRegisteredEvent({fleet, vehicle}));
         return fleet;
     }
@@ -51,7 +50,7 @@ class FleetManagementService {
     /**
      * Park a vehicle at a location
      */
-    async parkVehicle(vehicle: Vehicle, location: Location): Promise<Vehicle> {
+    async parkVehicle(vehicle: model.Vehicle, location: model.Location): Promise<model.Vehicle> {
         vehicle = await new commands.ParkVehicleCommand({vehicle, location}).execute();
         DomainEvents.publish(new events.VehicleParkedEvent({vehicle, location}));
         return vehicle;
@@ -60,25 +59,25 @@ class FleetManagementService {
     /**
      * Get fleet by ID
      */
-    async getFleetById(id: string): Promise<Fleet | null> {
-        return await FleetRepository.findOneBy(new queries.GetFleetByIdQuery(id));
+    async getFleetById(id: string): Promise<model.Fleet | null> {
+        return await AppDataSource.getRepository(model.Fleet).findOneBy(new queries.GetFleetByIdQuery(id));
     }
 
     /**
      * Get vehicle by plate number
      */
-    async getVehicleByPlateNumber(plateNumber: string): Promise<Vehicle | null> {
-        return await VehicleRepository.findOneBy(new queries.GetVehicleByPlateNumberQuery(plateNumber));
+    async getVehicleByPlateNumber(plateNumber: string): Promise<model.Vehicle | null> {
+        return await AppDataSource.getRepository(model.Vehicle).findOneBy(new queries.GetVehicleByPlateNumberQuery(
+            plateNumber));
     }
 
     /**
      * Get vehicle location
      */
-    async getVehicleLocation(plateNumber: string): Promise<Location | undefined> {
-        return (await VehicleRepository.findOneBy(new queries.GetVehicleLocationQuery(plateNumber)))?.currentLocation;
+    async getVehicleLocation(plateNumber: string): Promise<model.Location | undefined> {
+        return (await AppDataSource.getRepository(model.Vehicle).findOneBy(new queries.GetVehicleLocationQuery(
+            plateNumber)))?.currentLocation;
     }
 
 
 }
-
-export {FleetManagementService};

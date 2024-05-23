@@ -1,4 +1,4 @@
-export * as eventHandlers from "./Handlers/index.js";
+export * as handlers from "./Handlers/index.js";
 
 export * from "./FleetCreatedEvent.js";
 export * from "./FleetDeletedEvent.js";

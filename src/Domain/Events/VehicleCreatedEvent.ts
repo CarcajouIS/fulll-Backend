@@ -1,13 +1,12 @@
-import {Vehicle} from "../Model/index.js";
+import {model} from "../index.js";
 
-class VehicleCreatedEvent {
+type Vehicle = model.Vehicle
+
+export class VehicleCreatedEvent {
     constructor(private readonly _params: { vehicle: Vehicle }) {
     }
 
     get params() {
         return this._params;
     }
-
 }
-
-export {VehicleCreatedEvent};

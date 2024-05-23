@@ -1,4 +1,4 @@
-class FleetDeletedEvent {
+export class FleetDeletedEvent {
     constructor(private readonly _params: { id: string }) {
     }
 
@@ -6,5 +6,3 @@ class FleetDeletedEvent {
         return this._params;
     }
 }
-
-export {FleetDeletedEvent};

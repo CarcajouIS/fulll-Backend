@@ -1,4 +1,4 @@
-class VehicleDeletedEvent {
+export class VehicleDeletedEvent {
     constructor(private readonly _params: { id: string; }) {
     }
 
@@ -6,5 +6,3 @@ class VehicleDeletedEvent {
         return this._params;
     }
 }
-
-export {VehicleDeletedEvent};

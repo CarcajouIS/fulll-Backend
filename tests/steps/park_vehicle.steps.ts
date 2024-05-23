@@ -1,13 +1,13 @@
+import {model} from "../../src/Domain/index.js";
 import {Given, Then, When} from "@cucumber/cucumber";
 import {expect} from "chai";
-import {Location} from "../../src/Domain/Model/Location.js";
 import * as R from "ramda";
 
 let result: string;
 
 Given("a location", function () {
     const location = this.testLocations[0];
-    this.location = new Location(location.longitude, location.latitude, location.altitude);
+    this.location = new model.Location(location.longitude, location.latitude, location.altitude);
 });
 
 Given("my vehicle has been parked into this location", async function () {

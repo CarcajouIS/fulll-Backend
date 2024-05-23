@@ -1,10 +1,8 @@
-import {FleetDeletedEvent} from "../FleetDeletedEvent.js";
+import {type FleetDeletedEvent} from "../index.js";
 
-class FleetDeletedEventHandler {
+export class FleetDeletedEventHandler {
     handle({params: {id}}: FleetDeletedEvent): void {
         // Log the event
-        console.log(`Fleet with id ${id} deleted`);
+        console.debug(`Fleet with id ${id} deleted`);
     }
 }
-
-export {FleetDeletedEventHandler};

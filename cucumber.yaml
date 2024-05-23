@@ -1,6 +1,8 @@
 default:
+  loader:
+    - ts-node/esm
   import:
-    - tests/steps/**/*.js
+    - tests/steps/**/*.ts
   format:
     - progress
     - summary

@@ -1,14 +1,13 @@
-import {VehicleRepository} from "../../Infra/Repositories/index.js";
+import {AppDataSource} from "../../Infra/index.js";
+import {Vehicle} from "../../Domain/Model/index.js";
 
-class DeleteVehicleCommand {
+export class DeleteVehicleCommand {
     constructor(private readonly params: { plateNumber: string }) {
     }
 
     async execute() {
-        await VehicleRepository.delete(this.params.plateNumber);
-        return console.log(`Deleted Vehicle: ${this.params.plateNumber}`);
+        await AppDataSource.getRepository(Vehicle).delete(this.params.plateNumber);
+        return console.debug(`Deleted Vehicle: ${this.params.plateNumber}`);
     }
 
 }
-
-export {DeleteVehicleCommand};

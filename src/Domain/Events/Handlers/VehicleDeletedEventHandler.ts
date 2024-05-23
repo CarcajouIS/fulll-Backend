@@ -1,10 +1,8 @@
-import {VehicleDeletedEvent} from "../VehicleDeletedEvent.js";
+import {type VehicleDeletedEvent} from "../index.js";
 
-class VehicleDeletedEventHandler {
+export class VehicleDeletedEventHandler {
     handle(event: VehicleDeletedEvent): void {
         // Log the event
-        console.log(`Vehicle with plate number ${event.params.id} deleted`);
+        console.debug(`Vehicle with plate number ${event.params.id} deleted`);
     }
 }
-
-export {VehicleDeletedEventHandler};

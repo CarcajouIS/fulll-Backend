@@ -1,5 +1,3 @@
-interface QueryRepository<T, K> {
+export interface QueryRepository<T, K> {
     find(query: K): Promise<T | undefined>;
 }
-
-export {QueryRepository};

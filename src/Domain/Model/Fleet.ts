@@ -1,15 +1,26 @@
 import {Vehicle} from "./index.js";
 import {nanoid} from "nanoid";
+import {Column, Entity, JoinTable, ManyToMany, PrimaryColumn} from "typeorm";
 
+@Entity()
 export class Fleet {
+    @PrimaryColumn("varchar")
     fleetId!: string;
+    @Column("varchar")
     userId!: string;
+    @ManyToMany(() => Vehicle,
+        vehicle => vehicle.fleets,
+        {eager: true, cascade: true, onUpdate: "CASCADE", onDelete: "CASCADE"})
+    @JoinTable({
+        name: "fleet_vehicle",
+        joinColumn: {name: "fleet", referencedColumnName: "fleetId"},
+        inverseJoinColumn: {name: "vehicle", referencedColumnName: "plateNumber"},
+    })
     vehicles!: Vehicle[];
 
-    constructor({fleetId, userId, vehicles}: FleetLike) {
-        this.fleetId = fleetId ?? nanoid();
+    constructor(fleetId: string = nanoid(), userId: string) {
+        this.fleetId = fleetId;
         this.userId = userId;
-        this.vehicles = vehicles ?? [];
     }
 
     get id() {
@@ -33,18 +44,6 @@ export class Fleet {
 
     hasVehicle(vehicle: Vehicle): boolean {
         return !!this.vehicles?.find((v) => v.plateNumber === vehicle?.plateNumber);
-    }
-
-    getVehicle(plateNumber: string): Vehicle {
-        const vehicle = this.vehicles.find((v) => v.plateNumber === plateNumber) as Vehicle;
-        if (!vehicle) {
-            throw new Error(`Vehicle with plate number ${plateNumber} not found`);
-        }
-        return vehicle;
-    }
-
-    equals(other: Fleet): boolean {
-        return this.fleetId === other.fleetId;
     }
 }
 

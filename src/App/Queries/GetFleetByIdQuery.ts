@@ -1,4 +1,4 @@
-class GetFleetByIdQuery {
+export class GetFleetByIdQuery {
     constructor(public fleetId: string) {
     }
 
@@ -6,5 +6,3 @@ class GetFleetByIdQuery {
         return this.fleetId;
     }
 }
-
-export {GetFleetByIdQuery};

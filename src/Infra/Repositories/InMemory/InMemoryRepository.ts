@@ -1,24 +1,25 @@
 import {QueryRepository} from "./QueryRepository.js";
-import {CommandRepository, Like} from "./CommandRepository.js";
-import {GetFleetByIdQuery} from "../../../App/Queries/GetFleetByIdQuery.js";
-import {GetVehicleByPlateNumberQuery} from "../../../App/Queries/GetVehicleByPlateNumberQuery.js";
-import {GetVehicleLocationQuery} from "../../../App/Queries/GetVehicleLocationQuery.js";
-import {FleetLike, VehicleLike} from "../../../Domain/Model/index.js";
+import {CommandRepository} from "./CommandRepository.js";
+import {queries} from "../../../App/index.js";
+import {model} from "../../../Domain/index.js";
 
-class InMemoryRepository<T> implements QueryRepository<T, string>, CommandRepository<T> {
+type Query = queries.GetFleetByIdQuery | queries.GetVehicleByPlateNumberQuery | queries.GetVehicleLocationQuery;
+type Like = model.VehicleLike | model.FleetLike;
+
+export class InMemoryRepository<T> implements QueryRepository<T, string>, CommandRepository<T> {
     private storage: Map<string, T> = new Map();
 
-    constructor(private readonly _createClass: { new(paramObject: {}): T }) {
+    constructor(private readonly _createClass: { new(...params: any[]): T }) {
     }
 
-    create(params: FleetLike | VehicleLike): T {
-        return new this._createClass(params);
+    create(params: Like): T {
+        return new this._createClass(Object.values(params));
     }
 
     async save(entity: T): Promise<T> {
         const id = this.getId(entity);
         this.storage.set(id, entity);
-        console.log(`Saved ${this.getEntityName()} with ID: ${id}`);
+        console.debug(`Saved ${this.getEntityName()} with ID: ${id}`);
         return entity;
     }
 
@@ -27,7 +28,7 @@ class InMemoryRepository<T> implements QueryRepository<T, string>, CommandReposi
             throw new Error(`${this.getEntityName()} with id ${criteria} does not exist.`);
         }
         this.storage.set(criteria, entity);
-        console.log(`Updated ${this.getEntityName()} with ID: ${criteria}`);
+        console.debug(`Updated ${this.getEntityName()} with ID: ${criteria}`);
     }
 
     async find(id: string): Promise<T | undefined> {
@@ -44,7 +45,7 @@ class InMemoryRepository<T> implements QueryRepository<T, string>, CommandReposi
         }
     }
 
-    public async findOneBy(criteria: GetFleetByIdQuery | GetVehicleByPlateNumberQuery | GetVehicleLocationQuery): Promise<T | null> {
+    public async findOneBy(criteria: Query): Promise<T | null> {
         return await this.find(criteria.id) ?? null;
     }
 
@@ -56,10 +57,8 @@ class InMemoryRepository<T> implements QueryRepository<T, string>, CommandReposi
         return new constructor();
     }
 
-    private getId(entity: T | Like<T>): string {
+    private getId(entity: T | Like): string {
         // Assumes the entity has an id property
         return (entity as any)?.id;
     }
 }
-
-export {InMemoryRepository};

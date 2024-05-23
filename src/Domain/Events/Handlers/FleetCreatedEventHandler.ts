@@ -1,10 +1,8 @@
-import {FleetCreatedEvent} from "../FleetCreatedEvent.js";
+import {type FleetCreatedEvent} from "../index.js";
 
-class FleetCreatedEventHandler {
+export class FleetCreatedEventHandler {
     handle({params: {fleet: {id, userId}}}: FleetCreatedEvent): void {
         // Log the event
-        console.log(`Fleet with id ${id} created by user ${userId}`);
+        console.debug(`Fleet with id ${id} created by user ${userId}`);
     }
 }
-
-export {FleetCreatedEventHandler};

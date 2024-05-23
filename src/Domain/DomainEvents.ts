@@ -1,6 +1,6 @@
 type EventHandler<T> = (event: T) => void;
 
-class DomainEvents {
+export class DomainEvents {
     private static handlers: { [eventName: string]: EventHandler<any>[] } = {};
 
     static register<T>(eventName: string, handler: EventHandler<T>): void {
@@ -19,5 +19,3 @@ class DomainEvents {
         }
     }
 }
-
-export {DomainEvents};
